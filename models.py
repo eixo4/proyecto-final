@@ -18,7 +18,7 @@ class Workshop(db.Model):
     attendees = db.relationship('Attendee', backref='workshop', lazy=True, cascade="all, delete")
 
     def to_dict(self):
-        """Helper para convertir el objeto a diccionario (útil para la API JSON)."""
+        """Helper para convertir el objeto a diccionario."""
         return {
             "id": self.id,
             "name": self.name,
