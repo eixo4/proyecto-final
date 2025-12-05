@@ -45,3 +45,62 @@ gestion_talleres/
 ├── test_app.py          # Pruebas Unitarias
 ├── requirements.txt     # Dependencias
 └── README.md            # Documentación
+````
+
+## ⚙️ Instalación y Ejecución
+
+Sigue estos pasos para levantar el proyecto en tu máquina local:
+
+### 1\. Clonar el repositorio
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd gestion_talleres
+```
+
+### 2\. Configurar entorno virtual
+
+```bash
+# Linux / Mac
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Windows
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+### 3\. Instalar dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4\. Ejecutar la aplicación
+
+Al ejecutar la aplicación por primera vez, se creará automáticamente el archivo de base de datos `talleres.db`.
+
+```bash
+python app.py
+```
+
+📍 **Acceder al sitio web:** Abre tu navegador en `http://127.0.0.1:5000`
+
+## 🧪 Pruebas (Testing)
+
+El proyecto incluye pruebas automatizadas para validar la API y la lógica de negocio.
+
+```bash
+pytest
+```
+
+*Si las pruebas pasan correctamente, verás una barra verde indicando éxito.*
+
+## 📖 Documentación de la API
+
+| Método | Endpoint | Descripción | Body (JSON) |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/workshops` | Obtiene la lista de talleres | N/A |
+| `POST` | `/api/workshops` | Crea un nuevo taller | `{"name": "...", "date": "...", ...}` |
+| `DELETE` | `/api/workshops/<id>` | Elimina un taller por ID | N/A |
+| `POST` | `/api/workshops/<id>/register` | Inscribe a un estudiante | `{"student_name": "Juan Pérez"}` |
