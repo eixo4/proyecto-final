@@ -119,8 +119,6 @@ def web_delete_workshop(id):
         db.session.commit()
     return redirect(url_for('view_admin'))
 
-# ... (todo tu código de rutas anterior) ...
-
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
