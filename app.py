@@ -119,6 +119,22 @@ def web_delete_workshop(id):
         db.session.commit()
     return redirect(url_for('view_admin'))
 
+@app.route('/admin/edit/<int:id>', methods=['POST'])
+def web_edit_workshop(id):
+    workshop = db.session.get(Workshop, id)
+    if not workshop:
+        return redirect(url_for('view_admin'))
+
+    workshop.name = request.form['name']
+    workshop.description = request.form['description']
+    workshop.date = request.form['date']
+    workshop.time = request.form['time']
+    workshop.location = request.form['location']
+    workshop.category = request.form['category']
+
+    db.session.commit()
+    return redirect(url_for('view_admin'))
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
