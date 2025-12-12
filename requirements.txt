@@ -3,3 +3,4 @@ Flask-SQLAlchemy
 pytest
 pyjwt
 flask-bcrypt
+python-dotenv
