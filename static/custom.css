@@ -12,7 +12,6 @@
 body {
     font-family: 'Poppins', sans-serif; 
     color: white; 
-    /* IMPORTANT: Make sure this image is in the 'static' folder */
     background-image: url('rm373batch13-085.jpg');
     background-size: cover; 
     background-attachment: fixed; 
@@ -103,4 +102,36 @@ body {
 }
 .text-accent {
     color: var(--accent-color) !important;
+}
+
+
+
+.modal-content {
+    background-color: #ffffff !important;
+    color: #343a40 !important;
+}
+
+.modal-content label {
+    color: #343a40 !important;
+    font-weight: 600;
+}
+
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+    color: #343a40 !important;
+    background-color: #ffffff !important;
+}
+
+.modal-content input::placeholder,
+.modal-content textarea::placeholder {
+    color: #6c757d !important;
+}
+
+.modal-content .form-control {
+    border: 1px solid #ced4da !important;
+}
+
+.modal-content i {
+    color: var(--brand-color) !important;
 }
