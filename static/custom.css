@@ -1,0 +1,133 @@
+/*
+ * 1. Definición de Paleta y Tipografía
+ * -------------------------------------
+ * Aquí se definen las variables de color (Custom Properties) para mantener
+ * una paleta consistente en toda la aplicación.
+ */
+:root {
+    --brand-color: #1f496d; 
+    
+    --navbar-light-color: #0a4785; 
+    
+    --accent-color: #00bcd4; 
+    
+    --brand-color-dark: #00a2b8; 
+    
+    --overlay-color: rgba(17, 42, 64, 0.85); 
+    
+    --mint-color: #8DEDAB; 
+    --mint-color-dark: #6FC688; 
+
+    --text-muted-dark: #c0c0c0; 
+}
+
+body {
+    font-family: 'Poppins', sans-serif; 
+    color: white; /* Color base del texto sobre el fondo oscuro */
+
+    /* Configuración de la imagen de fondo */
+    background-image: url('rm373batch13-085.jpg');
+    background-size: cover; 
+    background-attachment: fixed; /* Mantiene la imagen fija al hacer scroll */
+    background-position: center center;
+    
+    /* Aplicación del overlay semi-transparente sobre la imagen */
+    background-color: var(--overlay-color); 
+    background-blend-mode: multiply; /* Mezcla el color del overlay con la imagen */
+}
+
+
+/* Botones Primarios (Usa el color oscuro '--brand-color') */
+.btn-primary {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+    color: white !important; 
+}
+.btn-primary:hover {
+    background-color: var(--brand-color-dark) !important;
+    border-color: var(--brand-color-dark) !important;
+}
+
+/* Navbar (Clase .bg-primary): Usa el color más claro '--navbar-light-color' */
+.bg-primary {
+    background-color: var(--navbar-light-color) !important;
+    border-color: var(--navbar-light-color) !important;
+    color: white !important; 
+}
+
+
+/* Botón de Inscripción  */
+.btn-inscripcion {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--brand-color) !important; /* Texto oscuro sobre el acento claro */
+    font-weight: 700 !important;
+    box-shadow: 0 0.2rem 0.5rem rgba(0, 188, 212, 0.4) !important;
+    transition: background-color 0.2s ease;
+}
+.btn-inscripcion:hover {
+    background-color: var(--brand-color-dark) !important;
+    border-color: var(--brand-color-dark) !important;
+    color: white !important;
+}
+
+/* Texto y títulos que usan el color de acento */
+.text-primary {
+    color: var(--accent-color) !important; 
+}
+
+/* Estilos de la Navbar (Links y Logo) */
+.navbar-brand { color: white !important; }
+.navbar-nav .nav-link { color: rgba(255, 255, 255, 0.8) !important; } /* Links ligeramente transparentes */
+.navbar-nav .nav-link:hover { color: var(--accent-color) !important; } /* Hover de acento */
+
+
+/* 3. Estilos de Tarjetas y Contenedores */
+
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-radius: 1rem; 
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+    color: #343a40; /* Contenido interno de la tarjeta debe ser oscuro (Bootstrap default) */
+}
+
+.card:hover {
+    transform: translateY(-3px); /* Efecto de elevación al pasar el mouse */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.4) !important; 
+}
+
+/* Estilo para los detalles de los talleres (fecha, hora, lugar) */
+.workshop-detail {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    color: #495057; 
+}
+
+.workshop-detail i {
+    color: var(--accent-color); /* Íconos con el color vibrante */
+    margin-right: 0.75rem;
+    font-size: 1.2rem; 
+}
+
+.table th, .table td {
+    vertical-align: middle;
+} 
+
+
+.btn-mint {
+    background-color: var(--mint-color) !important;
+    border-color: var(--mint-color) !important;
+    color: var(--brand-color) !important; 
+    font-weight: 700;
+    box-shadow: 0 0.2rem 0.5rem rgba(141, 237, 171, 0.4) !important;
+}
+
+.btn-mint:hover {
+    background-color: var(--mint-color-dark) !important;
+    border-color: var(--mint-color-dark) !important;
+    color: var(--brand-color) !important;
+}
+.text-accent {
+    color: var(--accent-color) !important;
+}
