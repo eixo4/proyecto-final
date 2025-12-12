@@ -1,234 +1,121 @@
 {% extends "base.html" %}
+{# 
+    Este template extiende de 'base.html' para heredar la estructura
+    del documento, el Navbar y los scripts necesarios. 
+#}
 
 {% block content %}
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-4 gap-3">
-    <div>
-        <div class="section-title">
-            <div class="section-title-icon">
-                <i class="bi bi-journal-text"></i>
-            </div>
-            <span>Panel de Administración</span>
-        </div>
-        <p class="section-subtitle mb-0">
-            Gestiona los talleres de la biblioteca: crea, organiza y mantén actualizada la agenda cultural.
-        </p>
-    </div>
-
-    <button class="btn btn-lib-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#createModal">
-        <i class="bi bi-plus-circle"></i>
-        <span>Nuevo Taller</span>
+<div class="d-flex justify-content-between align-items-center mb-5 pb-3">
+    {# TÍTULO PRINCIPAL #}
+    <h2 class="fw-bold text-white">Panel de Administración de Talleres</h2>
+    
+    {# BOTÓN DE ACCIÓN PRINCIPAL: Crear Nuevo Taller #}
+    <button class="btn btn-mint shadow" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-lg me-2"></i> Crear Nuevo Taller
     </button>
 </div>
 
-<div class="lib-table-wrapper">
-    <table class="table lib-table table-hover align-middle mb-0">
-        <thead>
+{# TABLA DE GESTIÓN DE TALLERES #}
+<div class="bg-white shadow-sm rounded p-3">
+    <table class="table table-striped table-hover">
+        <thead class="table-light">
             <tr>
-                <th scope="col"><i class="bi bi-book me-1"></i> Nombre</th>
-                <th scope="col"><i class="bi bi-calendar-event me-1"></i> Fecha</th>
-                <th scope="col"><i class="bi bi-geo-alt me-1"></i> Lugar</th>
-                <th scope="col" class="text-end"><i class="bi bi-sliders2 me-1"></i> Acciones</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Fecha y Hora</th>
+                <th scope="col">Lugar</th>
+                <th scope="col" class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
-            {% if workshops %}
-                {% for workshop in workshops %}
-                <tr>
-                    <td class="fw-semibold">{{ workshop.name }}</td>
-                    <td>
-                        <span class="badge bg-light text-dark border">
-                            {{ workshop.date }} · {{ workshop.time }}
-                        </span>
-                    </td>
-                    <td>{{ workshop.location }}</td>
-                    <td class="text-end d-flex justify-content-end gap-2">
-                        <button 
-                            class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#editModal{{ workshop.id }}">
-                            <i class="bi bi-pencil-fill"></i>
-                            <span>Editar</span>
-                        </button>
-
-                        <a href="/admin/delete/{{ workshop.id }}" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1">
-                            <i class="bi bi-trash3-fill"></i>
-                            <span>Eliminar</span>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="4" class="text-center py-4 text-muted">
-                        <i class="bi bi-info-circle me-2"></i>
-                        No hay talleres registrados aún. ¡Crea el primero!
-                    </td>
-                </tr>
-            {% endif %}
+            {# Bucle de Jinja para iterar sobre la lista de talleres ('workshops') #}
+            {% for workshop in workshops %}
+            <tr>
+                <td class="fw-bold">{{ workshop.name }}</td>
+                <td>
+                    {# LÓGICA CONDICIONAL DE JINJA: Asigna un badge (etiqueta) según la categoría #}
+                    {# Se utilizan clases de Bootstrap (bg-info, bg-success, etc.) para colorear los badges #}
+                    {% if workshop.category == 'Tecnología' or workshop.category == 'Programación' %}
+                        <span class="badge bg-info text-dark">💻 {{ workshop.category }}</span>
+                    {% elif workshop.category == 'Habilidades Blandas' %}
+                        <span class="badge bg-success">🤝 {{ workshop.category }}</span>
+                    {% elif workshop.category == 'Negocios' %}
+                        <span class="badge bg-warning text-dark">📈 {{ workshop.category }}</span>
+                    {% elif workshop.category == 'Inglés' %}
+                        <span class="badge bg-secondary">🌐 {{ workshop.category }}</span>
+                    {% elif workshop.category == 'Electricidad / Electrónica' %}
+                        <span class="badge bg-danger">⚡ {{ workshop.category }}</span>
+                    {% elif workshop.category == 'Hotelería / Turismo' %}
+                        <span class="badge bg-primary">✈️ {{ workshop.category }}</span>
+                    {% elif workshop.category == 'Química' %}
+                        <span class="badge bg-dark">🧪 {{ workshop.category }}</span>
+                    {% else %}
+                        <span class="badge bg-light text-dark">❓ Sin Categoría</span>
+                    {% endif %}
+                </td>
+                <td>{{ workshop.date }} a las {{ workshop.time }}</td>
+                <td>{{ workshop.location }}</td>
+                <td class="text-center">
+                    {# Botón de Eliminar: Usa un enlace a la ruta /admin/delete/<id> #}
+                    <a href="/admin/delete/{{ workshop.id }}" 
+                       class="btn btn-outline-danger btn-sm"
+                       {# Confirmación de JavaScript antes de enviar la solicitud de eliminación #}
+                       onclick="return confirm('¿Estás seguro de que deseas eliminar {{ workshop.name }}?');">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>
 
 
-<!-- Modal Crear Taller -->
-<div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+{# MODAL PARA CREAR UN NUEVO TALLER #}
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <form action="/admin/create" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-journal-plus me-2"></i> Registrar Taller
-                    </h5>
+                {# Cabecera del Modal (usa el color de Navbar definido en .bg-primary) #}
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">Registrar Nuevo Taller</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-
+                
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Nombre del Taller</label>
-                        <input type="text" name="name" class="form-control" placeholder="Ej.: Club de Lectura de Ciencia Ficción" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Descripción</label>
-                        <textarea name="description" class="form-control" rows="3" placeholder="Breve descripción del contenido del taller..."></textarea>
-                    </div>
-
-                    <div class="row">
-                        <div class="mb-3 col-md-6">
-                            <label class="form-label fw-semibold">Fecha</label>
-                            <input type="date" name="date" class="form-control" required>
-                        </div>
-                        <div class="mb-3 col-md-6">
-                            <label class="form-label fw-semibold">Hora</label>
-                            <input type="time" name="time" class="form-control" required>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Lugar</label>
-                        <input type="text" name="location" class="form-control" placeholder="Sala de lectura, Auditorio, etc." required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label class="form-label fw-semibold">Categoría</label>
-                        <select name="category" class="form-select">
-                            <option value="Tecnología">Tecnología</option>
-                            <option value="Finanzas">Finanzas</option>
-                            <option value="Artes">Artes</option>
-                        </select>
-                    </div>
+                    {# Campos de formulario #}
+                    <input type="text" name="name" class="form-control mb-3" placeholder="Nombre del Taller" required>
+                    <textarea name="description" class="form-control mb-3" placeholder="Descripción" rows="3"></textarea>
+                    
+                    <label for="date-input" class="form-label fw-bold mt-2">Fecha</label>
+                    <input type="date" name="date" id="date-input" class="form-control mb-3" required>
+                    
+                    <label for="time-input" class="form-label fw-bold">Hora</label>
+                    <input type="time" name="time" id="time-input" class="form-control mb-3" required>
+                    
+                    <input type="text" name="location" class="form-control mb-3" placeholder="Lugar (ej: Sala B3)" required>
+                    
+                    <label for="category-select" class="form-label fw-bold mt-2">Categoría</label>
+                    {# Select de Categoría #}
+                    <select name="category" id="category-select" class="form-select mb-3">
+                        <option value="Tecnología">Tecnología</option>
+                        <option value="Programación">Programación</option> 
+                        <option value="Habilidades Blandas">Habilidades Blandas</option>
+                        <option value="Negocios">Negocios</option> 
+                        <option value="Inglés">Inglés</option>
+                        <option value="Electricidad / Electrónica">Electricidad / Electrónica</option>
+                        <option value="Hotelería / Turismo">Hotelería / Turismo</option>
+                        <option value="Química">Química</option>
+                    </select>
                 </div>
-
-                <div class="modal-footer d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-lib-primary">
-                        Guardar Taller
-                    </button>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    {# Botón de envío que usa la clase personalizada 'btn-mint' #}
+                    <button type="submit" class="btn btn-mint">Guardar Taller</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-{% for workshop in workshops %}
-<!-- Modal Editar Taller -->
-<div class="modal fade" id="editModal{{ workshop.id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form action="/admin/edit/{{ workshop.id }}" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-pencil-square me-2"></i> Editar Taller
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Nombre del Taller</label>
-                        <input 
-                            type="text" 
-                            name="name" 
-                            class="form-control" 
-                            value="{{ workshop.name }}" 
-                            required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Descripción</label>
-                        <textarea 
-                            name="description" 
-                            class="form-control" 
-                            rows="3">{{ workshop.description }}</textarea>
-                    </div>
-
-                    <div class="row">
-                        <div class="mb-3 col-md-6">
-                            <label class="form-label fw-semibold">Fecha</label>
-                            <input 
-                                type="date" 
-                                name="date" 
-                                class="form-control" 
-                                value="{{ workshop.date }}" 
-                                required>
-                        </div>
-
-                        <div class="mb-3 col-md-6">
-                            <label class="form-label fw-semibold">Hora</label>
-                            <input 
-                                type="time" 
-                                name="time" 
-                                class="form-control" 
-                                value="{{ workshop.time }}" 
-                                required>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Lugar</label>
-                        <input 
-                            type="text" 
-                            name="location" 
-                            class="form-control" 
-                            value="{{ workshop.location }}" 
-                            required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label class="form-label fw-semibold">Categoría</label>
-                        <select name="category" class="form-select">
-                            <option value="Tecnología" 
-                                {% if workshop.category == 'Tecnología' %}selected{% endif %}>
-                                Tecnología
-                            </option>
-                            <option value="Finanzas" 
-                                {% if workshop.category == 'Finanzas' %}selected{% endif %}>
-                                Finanzas
-                            </option>
-                            <option value="Artes" 
-                                {% if workshop.category == 'Artes' %}selected{% endif %}>
-                                Artes
-                            </option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-lib-primary">
-                        Guardar Cambios
-                    </button>
-                </div>
-
-            </form>
-        </div>
-    </div>
-</div>
-{% endfor %}
 {% endblock %}
