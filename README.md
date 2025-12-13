@@ -63,7 +63,7 @@ Sigue estos pasos para levantar el proyecto en tu máquina local:
 ### 1\. Clonar el repositorio
 
 ```bash
-git clone [https://github.com/eixo4/proyecto-final/](https://github.com/eixo4/proyecto-final/)
+git clone https://github.com/eixo4/proyecto-final/
 cd gestion_talleres
 ```
 
