@@ -1,42 +1,47 @@
+# Code written by students fueled by 3 energy drinks and pure panic for trying to do all this 1 day before the due date
 import os
-from dotenv import load_dotenv # [SNYK FIX] Load env vars
-from flask import Flask, jsonify, request, render_template, redirect, url_for, make_response
-from models import db, Workshop, Attendee, User
-from flask_bcrypt import Bcrypt
 import jwt
 import datetime
 from functools import wraps
+from dotenv import load_dotenv
+from flask import Flask, jsonify, request, render_template, redirect, url_for, make_response
+from flask_bcrypt import Bcrypt
+from models import db, Workshop, Attendee, User
 
-# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
 
+# SQLite es ligero y no requiere servidor externo, perfecto para este proyecto.
+# En producción, cambiaríamos esto a PostgreSQL.
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///talleres.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# [SNYK FIX: HIGH] Hardcoded Non-Cryptographic Secret
-# We now load it from the environment. If it's not there, we crash (safer than using a default insecure key)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 if not app.config['SECRET_KEY']:
+    # if this triggers, I'm quitting immediately lol
     raise ValueError("No SECRET_KEY set for Flask application")
 
 db.init_app(app)
 bcrypt = Bcrypt(app)
 
-# Helper to determine if we are in production (for Secure cookies)
+# // Checking if we are live. If 'FLASK_ENV' is missing, we assume we are unsafe. YOLO.
 IS_PRODUCTION = os.getenv('FLASK_ENV') == 'production'
 
 def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
+
+        # Revisamos cookies Y headers.
+        # Cookies = Para el navegador (seguro). Headers = Para Postman/API (flexible).
         if 'token' in request.cookies:
             token = request.cookies.get('token')
         elif 'Authorization' in request.headers:
-            token = request.headers['Authorization'].split(" ")[1]
+            token = request.headers['Authorization'].split(" ")[1]  # Bearer <token>
 
         if not token:
+            # No ticket? No ride. Get out.
             if 'text/html' in request.accept_mimetypes:
                 return redirect(url_for('login_page'))
             return jsonify({'message': 'Token faltante'}), 401
@@ -47,11 +52,13 @@ def admin_required(f):
             if not current_user or not current_user.is_admin:
                 raise Exception("Acceso denegado")
         except:
+            # Something smelled fishy with the token. YEET user back to login.
             if 'text/html' in request.accept_mimetypes:
                 return redirect(url_for('login_page'))
             return jsonify({'message': 'Token inválido'}), 401
 
         return f(*args, **kwargs)
+
     return decorated
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -63,20 +70,22 @@ def login_page():
         user = User.query.filter_by(username=username).first()
 
         if user and bcrypt.check_password_hash(user.password, password):
+            # 2 hours expiration because security is my middle name (it's not)
             token = jwt.encode({
                 'user_id': user.id,
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
             }, app.config['SECRET_KEY'], algorithm="HS256")
 
             resp = make_response(redirect(url_for('view_admin')))
-            
-            # [SNYK FIX: LOW] Sensitive Cookie flags
+
+            # httponly=True evita que JavaScript lea la cookie (anti-XSS).
+            # samesite='Lax' protege contra CSRF. secure=True solo si hay HTTPS.
             resp.set_cookie(
-                'token', 
-                token, 
-                httponly=True,       # Prevents JavaScript access (XSS protection)
-                secure=IS_PRODUCTION, # True if Prod (HTTPS), False if Dev (HTTP)
-                samesite='Lax'       # CSRF protection
+                'token',
+                token,
+                httponly=True,
+                secure=IS_PRODUCTION,
+                samesite='Lax'
             )
             return resp
 
@@ -84,10 +93,11 @@ def login_page():
 
     return render_template('login.html')
 
+
 @app.route('/logout')
 def logout():
+    # deleting cookies like I delete my browsing history
     resp = make_response(redirect(url_for('view_students')))
-    # [SNYK FIX: LOW] Secure attribute on logout as well
     resp.set_cookie('token', '', expires=0, httponly=True, secure=IS_PRODUCTION, samesite='Lax')
     return resp
 
@@ -95,19 +105,21 @@ def logout():
 def view_students():
     workshops = Workshop.query.all()
     is_admin = False
+
     if 'token' in request.cookies:
         try:
             jwt.decode(request.cookies.get('token'), app.config['SECRET_KEY'], algorithms=["HS256"])
             is_admin = True
         except:
-            pass
+            pass  # // token was fake or expired, whatever dude
+
     return render_template('index.html', workshops=workshops, is_admin=is_admin)
 
-# ... (API Routes remain the same, they don't trigger Snyk warnings) ...
 @app.route('/api/workshops', methods=['GET'])
 def api_get_workshops():
     workshops = Workshop.query.all()
     return jsonify([w.to_dict() for w in workshops]), 200
+
 
 @app.route('/api/workshops/<int:id>', methods=['GET'])
 def api_get_workshop_detail(id):
@@ -116,18 +128,24 @@ def api_get_workshop_detail(id):
         return jsonify({"error": "Taller no encontrado"}), 404
     return jsonify(workshop.to_dict()), 200
 
+
 @app.route('/api/workshops/<int:id>/register', methods=['POST'])
 def api_register_student(id):
+    # Please don't SQL inject me
     data = request.json
     student_name = data.get('student_name')
+
     if not student_name:
         return jsonify({"error": "Nombre requerido"}), 400
+
     workshop = db.session.get(Workshop, id)
     if not workshop:
         return jsonify({"error": "Taller no encontrado"}), 404
+
     new_attendee = Attendee(student_name=student_name, workshop_id=id)
     db.session.add(new_attendee)
     db.session.commit()
+
     return jsonify({"message": f"Estudiante {student_name} registrado"}), 201
 
 @app.route('/admin')
@@ -136,9 +154,11 @@ def view_admin():
     workshops = Workshop.query.all()
     return render_template('admin.html', workshops=workshops, is_admin=True)
 
+
 @app.route('/admin/create', methods=['POST'])
 @admin_required
 def web_create_workshop():
+    # Usamos request.form porque viene de un formulario HTML normal, no JSON.
     new_workshop = Workshop(
         name=request.form['name'],
         description=request.form['description'],
@@ -151,11 +171,13 @@ def web_create_workshop():
     db.session.commit()
     return redirect(url_for('view_admin'))
 
+
 @app.route('/admin/edit/<int:id>', methods=['POST'])
 @admin_required
 def web_edit_workshop(id):
     workshop = db.session.get(Workshop, id)
     if workshop:
+        # Manually mapping fields like a caveman. Automappers are for the weak.
         workshop.name = request.form['name']
         workshop.description = request.form['description']
         workshop.date = request.form['date']
@@ -165,66 +187,37 @@ def web_edit_workshop(id):
         db.session.commit()
     return redirect(url_for('view_admin'))
 
+
 @app.route('/admin/delete/<int:id>')
 @admin_required
 def web_delete_workshop(id):
     workshop = db.session.get(Workshop, id)
     if workshop:
         db.session.delete(workshop)
-        db.session.commit()
+        db.session.commit()  # // Begone thot
     return redirect(url_for('view_admin'))
-
-@app.route('/api/workshops', methods=['POST'])
-@admin_required
-def api_create_workshop():
-    data = request.json
-    new_workshop = Workshop(
-        name=data['name'],
-        description=data.get('description', ''),
-        date=data['date'],
-        time=data['time'],
-        location=data['location'],
-        category=data['category']
-    )
-    db.session.add(new_workshop)
-    db.session.commit()
-    return jsonify(new_workshop.to_dict()), 201
-
-@app.route('/api/workshops/<int:id>', methods=['PUT', 'DELETE'])
-@admin_required
-def api_modify_workshop(id):
-    workshop = db.session.get(Workshop, id)
-    if not workshop:
-        return jsonify({"error": "Taller no encontrado"}), 404
-    if request.method == 'DELETE':
-        db.session.delete(workshop)
-        db.session.commit()
-        return jsonify({"message": "Taller eliminado"}), 200
-    data = request.json
-    workshop.name = data.get('name', workshop.name)
-    db.session.commit()
-    return jsonify(workshop.to_dict()), 200
 
 @app.before_request
 def create_initial_admin():
-    # [SNYK FIX: LOW] Use of Hardcoded Credentials
-    # Now we pull from OS environment
+    # Esto corre antes de cada petición. Si no existe un admin, lo crea.
+    # Usamos credenciales del sistema (ENV) para no dejar contraseñas hardcodeadas en el código.
+
     admin_user = os.getenv('ADMIN_USER', 'admin')
     admin_pass = os.getenv('ADMIN_PASS', 'admin123')
-    
+
+    # Checking DB every request is inefficient but I am too tired to fix it
     if not User.query.first():
         hashed_pw = bcrypt.generate_password_hash(admin_pass).decode('utf-8')
         admin = User(username=admin_user, password=hashed_pw, is_admin=True)
         db.session.add(admin)
         db.session.commit()
-        print(f">>> Usuario Admin creado desde ENV: {admin_user}")
+        print(f">>> Usuario Admin creado: {admin_user} (God mode enabled)")
+
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    
-    # [SNYK FIX: MEDIUM] Debug Mode Enabled
-    # We check the environment variable. If it says 'True', we debug. Otherwise, False.
+
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-    
+    # Do not run debug=True in production unless you like getting hacked ;)
     app.run(debug=debug_mode, port=5000)
