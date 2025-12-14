@@ -16,7 +16,7 @@ class Workshop(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(200))
 
-    # Usamos String para fecha/hora en lugar de objetos DateTime
+    # Usamos String para fecha/hora en lugar de objetos DateTime porque si
     date = db.Column(db.String(20), nullable=False)
     time = db.Column(db.String(10), nullable=False)
 

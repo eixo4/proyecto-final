@@ -13,7 +13,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # SQLite es ligero y no requiere servidor externo, perfecto para este proyecto.
-# En producción, cambiaríamos esto a PostgreSQL.
+# En PROD, cambiaríamos esto a PostgreSQL. Pero no es PROD entonces lo mas simple mejor
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///talleres.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -25,7 +25,7 @@ if not app.config['SECRET_KEY']:
 db.init_app(app)
 bcrypt = Bcrypt(app)
 
-# // Checking if we are live. If 'FLASK_ENV' is missing, we assume we are unsafe. YOLO.
+# Checking if we are live. If 'FLASK_ENV' is missing, we assume we are unsafe. YOLO.
 IS_PRODUCTION = os.getenv('FLASK_ENV') == 'production'
 
 def admin_required(f):
@@ -52,7 +52,7 @@ def admin_required(f):
             if not current_user or not current_user.is_admin:
                 raise Exception("Acceso denegado")
         except:
-            # Something smelled fishy with the token. YEET user back to login.
+            # Something smelled fishy with the token.
             if 'text/html' in request.accept_mimetypes:
                 return redirect(url_for('login_page'))
             return jsonify({'message': 'Token inválido'}), 401
@@ -111,7 +111,7 @@ def view_students():
             jwt.decode(request.cookies.get('token'), app.config['SECRET_KEY'], algorithms=["HS256"])
             is_admin = True
         except:
-            pass  # // token was fake or expired, whatever dude
+            pass  # token was fake or expired, whatever dude
 
     return render_template('index.html', workshops=workshops, is_admin=is_admin)
 
@@ -201,11 +201,10 @@ def web_delete_workshop(id):
 def create_initial_admin():
     # Esto corre antes de cada petición. Si no existe un admin, lo crea.
     # Usamos credenciales del sistema (ENV) para no dejar contraseñas hardcodeadas en el código.
-
     admin_user = os.getenv('ADMIN_USER', 'admin')
     admin_pass = os.getenv('ADMIN_PASS', 'admin123')
 
-    # Checking DB every request is inefficient but I am too tired to fix it
+    # Checking DB every request is inefficient, but I am too tired to fix it
     if not User.query.first():
         hashed_pw = bcrypt.generate_password_hash(admin_pass).decode('utf-8')
         admin = User(username=admin_user, password=hashed_pw, is_admin=True)
@@ -219,5 +218,5 @@ if __name__ == '__main__':
         db.create_all()
 
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-    # Do not run debug=True in production unless you like getting hacked ;)
+    # Do not run debug=True in production unless you like getting hacked ;) (ThankS SNYK)
     app.run(debug=debug_mode, port=5000)

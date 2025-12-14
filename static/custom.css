@@ -116,9 +116,6 @@ body {
     box-shadow: 0 10px 30px rgba(0, 243, 255, 0.2);
 }
 
-/* --- Efecto de brillo al desplazar los iconos --- */
-
-/* Technology: Blue */
 .card:hover .icon-tecnologia {
     text-shadow: 0 0 25px var(--neon-blue);
     transform: scale(1.1);
